@@ -2,10 +2,11 @@
 
 ## 0. team members (Name & Student ID)
 
-- Member 1: Name / Student ID
-- Member 2: Name / Student ID
-- Member 3: Name / Student ID
-- Member 4: Name / Student ID
+- Member 1  [@username](https://github.com/TienNoob)
+- Member 4: [@username](https://github.com/Sean957sean)
+- Member 2: [@username](https://github.com/DuckFard)
+- Member 3: [@username](https://github.com/SengYee314)
+
 
 ## 1. Problem
 
