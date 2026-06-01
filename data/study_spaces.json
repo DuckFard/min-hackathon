@@ -1,0 +1,52 @@
+[
+  {
+    "id": "library_reading_2",
+    "name": "Central Library Reading Room 2",
+    "location": "Central Library",
+    "open": {"start": "08:00", "end": "23:00"},
+    "noise_level": "quiet",
+    "capacity": 120,
+    "seats_available": 42,
+    "tags": ["quiet", "study", "library", "focus"]
+  },
+  {
+    "id": "engineering_lounge",
+    "name": "Engineering Student Lounge",
+    "location": "Engineering Building 302",
+    "open": {"start": "09:00", "end": "21:00"},
+    "noise_level": "moderate",
+    "capacity": 45,
+    "seats_available": 18,
+    "tags": ["engineering", "study", "teamwork"]
+  },
+  {
+    "id": "student_center_quiet",
+    "name": "Student Center Quiet Zone",
+    "location": "Student Center",
+    "open": {"start": "10:00", "end": "20:00"},
+    "noise_level": "quiet",
+    "capacity": 30,
+    "seats_available": 9,
+    "tags": ["quiet", "study", "snack"]
+  },
+  {
+    "id": "humanities_commons",
+    "name": "Humanities Seminar Commons",
+    "location": "Humanities Building 6",
+    "open": {"start": "09:00", "end": "18:00"},
+    "noise_level": "moderate",
+    "capacity": 60,
+    "seats_available": 27,
+    "tags": ["humanities", "discussion", "study"]
+  },
+  {
+    "id": "dorm_study_lounge",
+    "name": "Dormitory Study Lounge",
+    "location": "Dormitory 919",
+    "open": {"start": "00:00", "end": "23:59"},
+    "noise_level": "quiet",
+    "capacity": 80,
+    "seats_available": 36,
+    "tags": ["quiet", "dorm", "late-night", "study"]
+  }
+]

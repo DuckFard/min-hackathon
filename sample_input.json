@@ -1,1 +1,10 @@
-
+{
+  "current_time": "Tuesday 13:10",
+  "current_location": "Engineering Building 301",
+  "next_class_time": "Tuesday 15:00",
+  "next_class_location": "Humanities Building 6",
+  "priority": "quiet study",
+  "budget": 8000,
+  "dietary_tags": ["vegetarian"],
+  "interests": ["ai", "scholarship", "course"]
+}

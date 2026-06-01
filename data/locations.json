@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Engineering Building 301",
+    "area": "Engineering",
+    "x": 0.0,
+    "y": 0.0,
+    "nearest_shuttle_stop": "Engineering Stop"
+  },
+  {
+    "name": "Engineering Building 302",
+    "area": "Engineering",
+    "x": 0.3,
+    "y": 0.1,
+    "nearest_shuttle_stop": "Engineering Stop"
+  },
+  {
+    "name": "Central Library",
+    "area": "Library",
+    "x": 1.2,
+    "y": 1.1,
+    "nearest_shuttle_stop": "Library Stop"
+  },
+  {
+    "name": "Student Center",
+    "area": "Student Center",
+    "x": 1.0,
+    "y": 0.7,
+    "nearest_shuttle_stop": "Student Center Stop"
+  },
+  {
+    "name": "Humanities Building 6",
+    "area": "Humanities",
+    "x": 2.0,
+    "y": 1.3,
+    "nearest_shuttle_stop": "Humanities Stop"
+  },
+  {
+    "name": "College of Business",
+    "area": "Business",
+    "x": 2.4,
+    "y": 1.6,
+    "nearest_shuttle_stop": "Humanities Stop"
+  },
+  {
+    "name": "Dormitory 919",
+    "area": "Dormitory",
+    "x": 0.6,
+    "y": 2.2,
+    "nearest_shuttle_stop": "Dormitory Stop"
+  },
+  {
+    "name": "Engineering Stop",
+    "area": "Shuttle",
+    "x": 0.1,
+    "y": 0.2,
+    "nearest_shuttle_stop": "Engineering Stop"
+  },
+  {
+    "name": "Library Stop",
+    "area": "Shuttle",
+    "x": 1.1,
+    "y": 1.0,
+    "nearest_shuttle_stop": "Library Stop"
+  },
+  {
+    "name": "Student Center Stop",
+    "area": "Shuttle",
+    "x": 1.0,
+    "y": 0.7,
+    "nearest_shuttle_stop": "Student Center Stop"
+  },
+  {
+    "name": "Humanities Stop",
+    "area": "Shuttle",
+    "x": 2.0,
+    "y": 1.2,
+    "nearest_shuttle_stop": "Humanities Stop"
+  },
+  {
+    "name": "Dormitory Stop",
+    "area": "Shuttle",
+    "x": 0.7,
+    "y": 2.0,
+    "nearest_shuttle_stop": "Dormitory Stop"
+  }
+]

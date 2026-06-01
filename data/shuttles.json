@@ -1,0 +1,15 @@
+[
+  {"route": "Loop A", "day": "Tuesday", "from_stop": "Engineering Stop", "to_stop": "Library Stop", "departure_time": "13:20", "arrival_time": "13:28"},
+  {"route": "Loop A", "day": "Tuesday", "from_stop": "Engineering Stop", "to_stop": "Library Stop", "departure_time": "13:50", "arrival_time": "13:58"},
+  {"route": "Loop A", "day": "Tuesday", "from_stop": "Engineering Stop", "to_stop": "Library Stop", "departure_time": "14:20", "arrival_time": "14:28"},
+  {"route": "Loop A", "day": "Tuesday", "from_stop": "Library Stop", "to_stop": "Humanities Stop", "departure_time": "13:32", "arrival_time": "13:40"},
+  {"route": "Loop A", "day": "Tuesday", "from_stop": "Library Stop", "to_stop": "Humanities Stop", "departure_time": "14:02", "arrival_time": "14:10"},
+  {"route": "Loop A", "day": "Tuesday", "from_stop": "Library Stop", "to_stop": "Humanities Stop", "departure_time": "14:32", "arrival_time": "14:40"},
+  {"route": "Loop B", "day": "Tuesday", "from_stop": "Engineering Stop", "to_stop": "Student Center Stop", "departure_time": "13:18", "arrival_time": "13:24"},
+  {"route": "Loop B", "day": "Tuesday", "from_stop": "Engineering Stop", "to_stop": "Student Center Stop", "departure_time": "13:48", "arrival_time": "13:54"},
+  {"route": "Loop B", "day": "Tuesday", "from_stop": "Student Center Stop", "to_stop": "Humanities Stop", "departure_time": "13:30", "arrival_time": "13:38"},
+  {"route": "Loop B", "day": "Tuesday", "from_stop": "Student Center Stop", "to_stop": "Humanities Stop", "departure_time": "14:00", "arrival_time": "14:08"},
+  {"route": "Loop B", "day": "Tuesday", "from_stop": "Student Center Stop", "to_stop": "Humanities Stop", "departure_time": "14:30", "arrival_time": "14:38"},
+  {"route": "Loop C", "day": "Tuesday", "from_stop": "Dormitory Stop", "to_stop": "Library Stop", "departure_time": "13:25", "arrival_time": "13:37"},
+  {"route": "Loop C", "day": "Tuesday", "from_stop": "Dormitory Stop", "to_stop": "Library Stop", "departure_time": "14:25", "arrival_time": "14:37"}
+]

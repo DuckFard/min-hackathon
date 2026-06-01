@@ -1,0 +1,58 @@
+[
+  {
+    "id": "student_center_cafeteria",
+    "name": "Student Center Cafeteria",
+    "location": "Student Center",
+    "open": {"start": "11:00", "end": "19:00"},
+    "congestion": "medium",
+    "average_eating_minutes": 18,
+    "wait_minutes_by_congestion": {"low": 4, "medium": 9, "high": 16},
+    "menu": [
+      {"name": "Kimbap Set", "price": 4500, "tags": ["quick", "vegetarian"]},
+      {"name": "Chicken Rice Bowl", "price": 6500, "tags": ["rice", "protein"]},
+      {"name": "Tofu Bibimbap", "price": 6000, "tags": ["vegetarian", "rice"]}
+    ]
+  },
+  {
+    "id": "engineering_cafe",
+    "name": "Engineering Cafe",
+    "location": "Engineering Building 302",
+    "open": {"start": "08:30", "end": "18:30"},
+    "congestion": "low",
+    "average_eating_minutes": 12,
+    "wait_minutes_by_congestion": {"low": 3, "medium": 8, "high": 14},
+    "menu": [
+      {"name": "Americano and Bagel", "price": 5200, "tags": ["quick", "vegetarian"]},
+      {"name": "Chicken Sandwich", "price": 7000, "tags": ["quick", "protein"]},
+      {"name": "Greek Yogurt", "price": 4800, "tags": ["quick", "vegetarian"]}
+    ]
+  },
+  {
+    "id": "library_cafe",
+    "name": "Library Cafe",
+    "location": "Central Library",
+    "open": {"start": "09:00", "end": "21:00"},
+    "congestion": "high",
+    "average_eating_minutes": 15,
+    "wait_minutes_by_congestion": {"low": 5, "medium": 10, "high": 18},
+    "menu": [
+      {"name": "Tuna Mayo Rice Ball", "price": 3500, "tags": ["quick", "rice"]},
+      {"name": "Vegetable Sandwich", "price": 5800, "tags": ["vegetarian", "quick"]},
+      {"name": "Latte", "price": 4500, "tags": ["drink"]}
+    ]
+  },
+  {
+    "id": "dorm_cafeteria",
+    "name": "Dormitory Cafeteria",
+    "location": "Dormitory 919",
+    "open": {"start": "07:30", "end": "20:00"},
+    "congestion": "low",
+    "average_eating_minutes": 20,
+    "wait_minutes_by_congestion": {"low": 5, "medium": 11, "high": 17},
+    "menu": [
+      {"name": "Home Meal Tray", "price": 5500, "tags": ["rice", "protein"]},
+      {"name": "Vegetable Curry", "price": 5700, "tags": ["vegetarian", "rice"]},
+      {"name": "Noodle Bowl", "price": 5000, "tags": ["warm"]}
+    ]
+  }
+]

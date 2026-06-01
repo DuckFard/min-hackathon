@@ -1,0 +1,57 @@
+[
+  {
+    "id": "scholarship_qa",
+    "title": "Scholarship Q&A Desk",
+    "day": "Tuesday",
+    "start_time": "13:30",
+    "end_time": "14:20",
+    "location": "Student Center",
+    "tags": ["scholarship", "finance", "undergraduate"],
+    "target": ["undergraduate", "graduate"],
+    "description": "Short advising session about scholarship documents and deadlines."
+  },
+  {
+    "id": "ai_seminar",
+    "title": "AI Research Brown Bag Seminar",
+    "day": "Tuesday",
+    "start_time": "14:00",
+    "end_time": "15:30",
+    "location": "Engineering Building 302",
+    "tags": ["ai", "research", "seminar", "engineering"],
+    "target": ["undergraduate", "graduate"],
+    "description": "Informal seminar with student research demos and Q&A."
+  },
+  {
+    "id": "language_exchange",
+    "title": "Language Exchange Table",
+    "day": "Tuesday",
+    "start_time": "13:40",
+    "end_time": "14:40",
+    "location": "Humanities Building 6",
+    "tags": ["language", "social", "international"],
+    "target": ["student"],
+    "description": "Drop-in conversation table for Korean and international students."
+  },
+  {
+    "id": "startup_info",
+    "title": "Campus Startup Info Session",
+    "day": "Tuesday",
+    "start_time": "12:50",
+    "end_time": "13:50",
+    "location": "College of Business",
+    "tags": ["startup", "career", "event"],
+    "target": ["student"],
+    "description": "Overview of student startup support programs."
+  },
+  {
+    "id": "course_help",
+    "title": "Course Registration Help Desk",
+    "day": "Tuesday",
+    "start_time": "14:10",
+    "end_time": "16:00",
+    "location": "Central Library",
+    "tags": ["course", "registration", "academic"],
+    "target": ["undergraduate"],
+    "description": "Advisors help students check course plans before registration."
+  }
+]
