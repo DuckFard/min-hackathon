@@ -1,12 +1,5 @@
 # GapWise: Campus Gap-Time Planner
 
-## 0. team members (Name & Student ID)
-
-- Member 1: Name / Student ID
-- Member 2: Name / Student ID
-- Member 3: Name / Student ID
-- Member 4: Name / Student ID
-
 ## 1. Problem
 
 Students often have awkward gaps between classes. A 40 to 120 minute break can be useful, but students need to quickly decide whether they should study, eat, attend a short event, or move closer to the next class. The decision depends on campus location, walking or shuttle time, seat availability, food budget, cafeteria congestion, and the next class time.
