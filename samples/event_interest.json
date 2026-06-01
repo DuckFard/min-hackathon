@@ -1,0 +1,12 @@
+{
+  "current_time": "Tuesday 13:10",
+  "current_location": "Engineering Building 301",
+  "next_class_time": "Tuesday 15:00",
+  "next_class_location": "Humanities Building 6",
+  "priority": "event seminar",
+  "budget": 8000,
+  "dietary_tags": [],
+  "interests": ["ai", "scholarship"],
+  "allowed_activities": ["event"],
+  "min_activity_minutes": 25
+}

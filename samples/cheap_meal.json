@@ -1,0 +1,12 @@
+{
+  "current_time": "Tuesday 13:10",
+  "current_location": "Engineering Building 301",
+  "next_class_time": "Tuesday 15:00",
+  "next_class_location": "Humanities Building 6",
+  "priority": "cheap meal",
+  "budget": 5500,
+  "dietary_tags": ["vegetarian"],
+  "interests": [],
+  "allowed_activities": ["meal"],
+  "max_walking_minutes": 20
+}

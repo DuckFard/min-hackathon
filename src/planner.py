@@ -39,7 +39,7 @@ class GapWisePlanner:
         self.data = load_campus_data(data_dir)
         self.locations = {item["name"]: item for item in self.data["locations"]}
 
-    def plan(self, user_input: dict) -> dict:
+    def plan(self, user_input: dict, include_explain: bool = False) -> dict:
         current_time = parse_day_time(user_input["current_time"])
         next_class_time = parse_day_time(user_input["next_class_time"])
         if next_class_time <= current_time:
@@ -50,6 +50,9 @@ class GapWisePlanner:
         self._require_location(current_location)
         self._require_location(next_class_location)
 
+        allowed_activities = {
+            item.lower() for item in user_input.get("allowed_activities", [])
+        }
         context = {
             "current_time": current_time,
             "next_class_time": next_class_time,
@@ -60,15 +63,32 @@ class GapWisePlanner:
             "budget": int(user_input.get("budget", 0)),
             "dietary_tags": set(tag.lower() for tag in user_input.get("dietary_tags", [])),
             "interests": set(tag.lower() for tag in user_input.get("interests", [])),
+            "allowed_activities": allowed_activities,
+            "min_activity_minutes": int(user_input.get("min_activity_minutes", 20)),
+            "max_walking_minutes": user_input.get("max_walking_minutes"),
+            "avoid_shuttle": bool(user_input.get("avoid_shuttle", False)),
+            "include_explain": include_explain,
+            "explanations": [],
         }
+        if context["max_walking_minutes"] is not None:
+            context["max_walking_minutes"] = int(context["max_walking_minutes"])
 
         candidates = []
-        candidates.extend(self._study_candidates(context))
-        candidates.extend(self._food_candidates(context))
-        candidates.extend(self._event_candidates(context))
+        if self._activity_allowed(context, "study"):
+            candidates.extend(self._study_candidates(context))
+        else:
+            self._reject(context, "Study options", "disabled by allowed_activities.")
+        if self._activity_allowed(context, "meal"):
+            candidates.extend(self._food_candidates(context))
+        else:
+            self._reject(context, "Meal options", "disabled by allowed_activities.")
+        if self._activity_allowed(context, "event"):
+            candidates.extend(self._event_candidates(context))
+        else:
+            self._reject(context, "Event options", "disabled by allowed_activities.")
         candidates.sort(key=lambda item: item["score"], reverse=True)
 
-        return {
+        result = {
             "project": "GapWise: Campus Gap-Time Planner",
             "input_summary": {
                 "current_time": format_minutes(current_time),
@@ -78,6 +98,10 @@ class GapWisePlanner:
                 "gap_minutes": next_class_time - current_time,
                 "priority": context["priority"],
                 "budget": context["budget"],
+                "min_activity_minutes": context["min_activity_minutes"],
+                "max_walking_minutes": context["max_walking_minutes"],
+                "avoid_shuttle": context["avoid_shuttle"],
+                "allowed_activities": sorted(context["allowed_activities"]),
             },
             "best_plan": candidates[0] if candidates else None,
             "alternatives": candidates[1:4],
@@ -90,31 +114,52 @@ class GapWisePlanner:
                 "Returned the best gap-time plan plus backup options.",
             ],
         }
+        if include_explain:
+            result["explanations"] = context["explanations"]
+        return result
 
     def _study_candidates(self, context: dict) -> list[dict]:
         candidates = []
         for space in self.data["study_spaces"]:
             place = space["location"]
             arrival = self._earliest_travel(
-                context["current_location"], place, context["current_time"]
+                context["current_location"], place, context["current_time"], context
             )
             departure = self._latest_travel(
-                place, context["next_class_location"], context["latest_arrival"]
+                place, context["next_class_location"], context["latest_arrival"], context
             )
 
             if arrival.arrive >= departure.depart:
+                self._reject(context, space["name"], "not enough time after travel.")
+                continue
+            if self._walking_limit_exceeded(context, arrival, departure):
+                self._reject(context, space["name"], "walking time exceeds max_walking_minutes.")
                 continue
             if not is_open(space["open"], arrival.arrive) or not is_open(space["open"], departure.depart):
+                self._reject(context, space["name"], "study space is closed during the usable window.")
                 continue
 
             usable_minutes = departure.depart - arrival.arrive
-            if usable_minutes < 20:
+            if usable_minutes < context["min_activity_minutes"]:
+                self._reject(
+                    context,
+                    space["name"],
+                    f"only {format_duration(usable_minutes)} usable, below minimum activity time.",
+                )
                 continue
 
             quiet_match = 1 if "quiet" in context["priority"] and space["noise_level"] == "quiet" else 0
             seat_ratio = space["seats_available"] / max(space["capacity"], 1)
             tag_matches = self._tag_matches(space.get("tags", []), context)
             distance_penalty = arrival.minutes + departure.minutes
+            score_breakdown = [
+                {"label": "Base study score", "value": 40},
+                {"label": "Usable time bonus", "value": round(min(usable_minutes, 90) * 0.35, 1)},
+                {"label": "Seat availability bonus", "value": round(seat_ratio * 20, 1)},
+                {"label": "Quiet priority bonus", "value": quiet_match * 25},
+                {"label": "Preference tag bonus", "value": tag_matches * 8},
+                {"label": "Travel time penalty", "value": round(-distance_penalty * 0.55, 1)},
+            ]
 
             score = (
                 40
@@ -133,6 +178,7 @@ class GapWisePlanner:
                     "location": place,
                     "usable_minutes": usable_minutes,
                     "reason": self._study_reason(space, usable_minutes, quiet_match, tag_matches),
+                    "score_breakdown": score_breakdown,
                     "steps": [
                         self._travel_step(arrival),
                         {
@@ -149,40 +195,65 @@ class GapWisePlanner:
                     ],
                 }
             )
+            self._accept(context, space["name"], "study option fits time, opening hours, and preferences.")
         return candidates
 
     def _food_candidates(self, context: dict) -> list[dict]:
         candidates = []
         if context["budget"] <= 0:
+            self._reject(context, "Meal options", "budget is 0, so meals are skipped.")
             return candidates
 
         for cafeteria in self.data["cafeterias"]:
             place = cafeteria["location"]
             arrival = self._earliest_travel(
-                context["current_location"], place, context["current_time"]
+                context["current_location"], place, context["current_time"], context
             )
             departure = self._latest_travel(
-                place, context["next_class_location"], context["latest_arrival"]
+                place, context["next_class_location"], context["latest_arrival"], context
             )
             if arrival.arrive >= departure.depart:
+                self._reject(context, cafeteria["name"], "not enough time after travel.")
+                continue
+            if self._walking_limit_exceeded(context, arrival, departure):
+                self._reject(context, cafeteria["name"], "walking time exceeds max_walking_minutes.")
                 continue
             if not is_open(cafeteria["open"], arrival.arrive):
+                self._reject(context, cafeteria["name"], "cafeteria is closed when the student arrives.")
                 continue
 
             best_item = self._best_menu_item(cafeteria["menu"], context)
             if best_item is None:
+                self._reject(context, cafeteria["name"], "no menu item fits the budget.")
                 continue
 
             wait = cafeteria["wait_minutes_by_congestion"][cafeteria["congestion"]]
             meal_minutes = wait + cafeteria["average_eating_minutes"]
             usable_minutes = departure.depart - arrival.arrive
             if usable_minutes < meal_minutes:
+                self._reject(
+                    context,
+                    cafeteria["name"],
+                    f"meal needs {format_duration(meal_minutes)}, but only "
+                    f"{format_duration(usable_minutes)} is available.",
+                )
+                continue
+            if meal_minutes < context["min_activity_minutes"]:
+                self._reject(context, cafeteria["name"], "meal duration is below minimum activity time.")
                 continue
 
             congestion_score = {"low": 20, "medium": 10, "high": 0}[cafeteria["congestion"]]
             budget_left = context["budget"] - best_item["price"]
             priority_bonus = 20 if any(word in context["priority"] for word in ["food", "meal", "eat", "cheap"]) else 0
             diet_bonus = 12 if context["dietary_tags"] and context["dietary_tags"].intersection(best_item["tags"]) else 0
+            score_breakdown = [
+                {"label": "Base meal score", "value": 38},
+                {"label": "Food priority bonus", "value": priority_bonus},
+                {"label": "Dietary match bonus", "value": diet_bonus},
+                {"label": "Congestion bonus", "value": congestion_score},
+                {"label": "Budget remaining bonus", "value": round(min(budget_left / 600, 10), 1)},
+                {"label": "Travel time penalty", "value": round(-(arrival.minutes + departure.minutes) * 0.45, 1)},
+            ]
 
             score = (
                 38
@@ -204,6 +275,7 @@ class GapWisePlanner:
                         f"{best_item['name']} fits the budget at {best_item['price']} KRW; "
                         f"current congestion is {cafeteria['congestion']}."
                     ),
+                    "score_breakdown": score_breakdown,
                     "steps": [
                         self._travel_step(arrival),
                         {
@@ -220,6 +292,7 @@ class GapWisePlanner:
                     ],
                 }
             )
+            self._accept(context, cafeteria["name"], "meal option fits budget, travel, and time constraints.")
         return candidates
 
     def _event_candidates(self, context: dict) -> list[dict]:
@@ -228,26 +301,43 @@ class GapWisePlanner:
             event_start = parse_day_time(f"{event['day']} {event['start_time']}")
             event_end = parse_day_time(f"{event['day']} {event['end_time']}")
             if event_end <= context["current_time"] or event_start >= context["next_class_time"]:
+                self._reject(context, event["title"], "event does not overlap with the gap.")
                 continue
 
             place = event["location"]
             arrival = self._earliest_travel(
-                context["current_location"], place, context["current_time"]
+                context["current_location"], place, context["current_time"], context
             )
             departure = self._latest_travel(
-                place, context["next_class_location"], context["latest_arrival"]
+                place, context["next_class_location"], context["latest_arrival"], context
             )
             if arrival.arrive >= departure.depart:
+                self._reject(context, event["title"], "not enough time after travel.")
+                continue
+            if self._walking_limit_exceeded(context, arrival, departure):
+                self._reject(context, event["title"], "walking time exceeds max_walking_minutes.")
                 continue
 
             attend_start = max(arrival.arrive, event_start)
             attend_end = min(departure.depart, event_end)
             attend_minutes = attend_end - attend_start
-            if attend_minutes < 20:
+            if attend_minutes < context["min_activity_minutes"]:
+                self._reject(
+                    context,
+                    event["title"],
+                    f"can attend only {format_duration(attend_minutes)}, below minimum activity time.",
+                )
                 continue
 
             tag_matches = self._tag_matches(event.get("tags", []), context)
             priority_bonus = 18 if any(word in context["priority"] for word in ["event", "seminar", "social"]) else 0
+            score_breakdown = [
+                {"label": "Base event score", "value": 32},
+                {"label": "Event priority bonus", "value": priority_bonus},
+                {"label": "Preference tag bonus", "value": tag_matches * 12},
+                {"label": "Attendable time bonus", "value": round(min(attend_minutes, 60) * 0.35, 1)},
+                {"label": "Travel time penalty", "value": round(-(arrival.minutes + departure.minutes) * 0.5, 1)},
+            ]
             score = (
                 32
                 + priority_bonus
@@ -267,6 +357,7 @@ class GapWisePlanner:
                         f"Matches {tag_matches} preference tag(s) and can be attended "
                         f"for {format_duration(attend_minutes)}."
                     ),
+                    "score_breakdown": score_breakdown,
                     "steps": [
                         self._travel_step(arrival),
                         {
@@ -280,16 +371,19 @@ class GapWisePlanner:
                     ],
                 }
             )
+            self._accept(context, event["title"], "event overlaps with the gap and fits travel time.")
         return candidates
 
-    def _earliest_travel(self, origin: str, destination: str, depart_at: int) -> TravelSegment:
+    def _earliest_travel(self, origin: str, destination: str, depart_at: int, context: dict) -> TravelSegment:
         walking = self._walking_segment(origin, destination, depart_at)
+        if context["avoid_shuttle"]:
+            return walking
         shuttle = self._earliest_shuttle_segment(origin, destination, depart_at)
         if shuttle and shuttle.arrive < walking.arrive:
             return shuttle
         return walking
 
-    def _latest_travel(self, origin: str, destination: str, arrive_by: int) -> TravelSegment:
+    def _latest_travel(self, origin: str, destination: str, arrive_by: int, context: dict) -> TravelSegment:
         walk_minutes = self._walking_minutes(origin, destination)
         detail = (
             "Already at the destination."
@@ -306,6 +400,8 @@ class GapWisePlanner:
             detail=detail,
         )
 
+        if context["avoid_shuttle"]:
+            return walking
         shuttle = self._latest_shuttle_segment(origin, destination, arrive_by)
         if shuttle and shuttle.depart > walking.depart:
             return shuttle
@@ -453,6 +549,30 @@ class GapWisePlanner:
             "duration": format_duration(segment.minutes),
             "detail": segment.detail,
         }
+
+    def _activity_allowed(self, context: dict, activity: str) -> bool:
+        return not context["allowed_activities"] or activity in context["allowed_activities"]
+
+    def _walking_limit_exceeded(
+        self, context: dict, arrival: TravelSegment, departure: TravelSegment
+    ) -> bool:
+        limit = context["max_walking_minutes"]
+        if limit is None:
+            return False
+        walking_segments = [
+            segment.minutes
+            for segment in [arrival, departure]
+            if segment.mode == "walk"
+        ]
+        return any(minutes > limit for minutes in walking_segments)
+
+    def _accept(self, context: dict, title: str, reason: str) -> None:
+        if context["include_explain"]:
+            context["explanations"].append(f"Accepted {title}: {reason}")
+
+    def _reject(self, context: dict, title: str, reason: str) -> None:
+        if context["include_explain"]:
+            context["explanations"].append(f"Rejected {title}: {reason}")
 
     def _require_location(self, name: str) -> None:
         if name not in self.locations:

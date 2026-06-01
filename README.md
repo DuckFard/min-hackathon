@@ -42,6 +42,24 @@ The program uses mock campus data. It does not require real SNU APIs.
 }
 ```
 
+Optional fields can be added to make the planner easier to test:
+
+| Field | Type | Description |
+|---|---|---|
+| `allowed_activities` | list of strings | Limits output to selected activity types such as `study`, `meal`, or `event` |
+| `min_activity_minutes` | number | Requires each recommendation to provide at least this much usable activity time |
+| `max_walking_minutes` | number | Rejects direct walking segments longer than this limit |
+| `avoid_shuttle` | boolean | Forces the planner to use walking instead of shuttle options |
+
+The `samples/` folder contains extra inputs for peer testing:
+
+| File | What it tests |
+|---|---|
+| `samples/cheap_meal.json` | Meal-only planning with a small budget |
+| `samples/event_interest.json` | Event-only planning based on interests |
+| `samples/short_gap.json` | A tight schedule with walking limits |
+| `samples/no_feasible_plan.json` | A case where all options should be rejected |
+
 ## 5. Internal Pipeline and Data Flow
 
 At a high level, GapWise turns one student schedule gap into a ranked list of feasible plans:
@@ -185,6 +203,11 @@ latest_arrival = next_class_time - SAFETY_BUFFER_MINUTES
   - `priority` is lowercased.
   - `budget` is converted to an integer.
   - `dietary_tags` and `interests` are converted to lowercase sets.
+- Optional constraints are also normalized:
+  - `allowed_activities` becomes a lowercase set.
+  - `min_activity_minutes` controls the minimum useful activity time.
+  - `max_walking_minutes` can reject options with too much direct walking.
+  - `avoid_shuttle` disables shuttle routes for the scenario.
 
 **Output:**
 
@@ -200,7 +223,11 @@ latest_arrival = next_class_time - SAFETY_BUFFER_MINUTES
     "priority": "quiet study",
     "budget": 8000,
     "dietary_tags": {"vegetarian"},
-    "interests": {"ai", "scholarship", "course"}
+    "interests": {"ai", "scholarship", "course"},
+    "allowed_activities": set(),
+    "min_activity_minutes": 20,
+    "max_walking_minutes": None,
+    "avoid_shuttle": False
 }
 ```
 
@@ -245,6 +272,8 @@ walking_minutes = max(2, ceil(distance * 8))
   - adds walking time from the destination stop to the final destination.
 - `_earliest_travel()` compares direct walking with shuttle travel and chooses the option that arrives earliest.
 - `_latest_travel()` compares direct walking with shuttle travel and chooses the option that lets the student leave the candidate location as late as possible while still arriving before the deadline.
+- If `avoid_shuttle` is true, both travel functions skip shuttle checks and return walking segments only.
+- If `max_walking_minutes` is set, candidates with direct walking segments above that limit are rejected.
 
 **Output:**
 
@@ -419,6 +448,7 @@ attend_end = min(departure.depart, event_end)
 **Output:**
 
 - Each candidate receives a rounded numeric `score`.
+- Each accepted candidate also receives a `score_breakdown` list showing the positive bonuses and travel penalty that created the final score.
 
 **Purpose:**
 
@@ -439,6 +469,7 @@ attend_end = min(departure.depart, event_end)
 - The highest-scoring candidate becomes `best_plan`.
 - The next three candidates become `alternatives`.
 - If no candidate survives filtering, `best_plan` is set to `None`.
+- When `--explain` is enabled, the result also includes accepted and rejected option messages.
 
 **Output:**
 
@@ -464,15 +495,18 @@ attend_end = min(departure.depart, event_end)
 
 - The result dictionary from Step 10.
 - The `--json` flag from Step 1.
+- The `--explain` flag from Step 1.
 
 **Process:**
 
 - If `--json` is used, `main.py` prints the raw result dictionary with `json.dumps()`.
+- If `--explain` is used, the readable report includes an "Explain Mode" section with accepted and rejected option messages.
 - Otherwise, `format_plan_report()` builds a readable text report with:
   - project title;
   - input summary;
   - best plan;
   - step-by-step schedule;
+  - score breakdown;
   - backup options;
   - short pipeline summary.
 - If `best_plan` is `None`, the report explains that no feasible plan was found.
@@ -505,6 +539,25 @@ To print machine-readable JSON:
 python main.py --json
 ```
 
+To show why options were accepted or rejected:
+
+```bash
+python main.py --explain
+```
+
+To run several built-in peer-review scenarios:
+
+```bash
+python main.py --demo
+```
+
+You can also combine flags:
+
+```bash
+python main.py samples/cheap_meal.json --explain
+python main.py --demo --json
+```
+
 ## 7. Example Output(s)
 
 ```text
@@ -522,6 +575,14 @@ Best Plan
 Study at Central Library Reading Room 2 (quiet study, score ...)
 Location: Central Library
 Reason: Available for ..., 42 seats open, noise level is quiet, matches quiet-study priority.
+
+Score Breakdown
+- Base study score: +40
+- Usable time bonus: +...
+- Seat availability bonus: +...
+- Quiet priority bonus: +25
+- Preference tag bonus: +...
+- Travel time penalty: -...
 ```
 
 The exact scores may change if the mock data or user input changes.

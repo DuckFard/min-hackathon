@@ -1,0 +1,14 @@
+{
+  "current_time": "Tuesday 14:40",
+  "current_location": "Dormitory 919",
+  "next_class_time": "Tuesday 15:00",
+  "next_class_location": "Humanities Building 6",
+  "priority": "quiet study",
+  "budget": 0,
+  "dietary_tags": [],
+  "interests": [],
+  "allowed_activities": ["study"],
+  "min_activity_minutes": 30,
+  "max_walking_minutes": 8,
+  "avoid_shuttle": true
+}

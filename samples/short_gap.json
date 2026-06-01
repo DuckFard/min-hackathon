@@ -1,0 +1,11 @@
+{
+  "current_time": "Tuesday 14:25",
+  "current_location": "Engineering Building 301",
+  "next_class_time": "Tuesday 15:00",
+  "next_class_location": "Humanities Building 6",
+  "priority": "quick study",
+  "budget": 8000,
+  "dietary_tags": ["vegetarian"],
+  "interests": ["course"],
+  "max_walking_minutes": 12
+}
